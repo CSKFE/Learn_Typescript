@@ -49,6 +49,7 @@
 
   const printLoginState = (state: LoginState):void => {
     // in 연산자를 사용해서 state에 response가 정의됐는지 체크 후 결과값 리턴
+    // 보편적이긴 하나 그렇게 좋은 방법은 아니다.
     if('response' in state) {
       console.log(state.response.body)
     } else {
