@@ -4,22 +4,18 @@
     hasMilk?: boolean;
     hasSugar?: boolean;
   }
+
   interface CoffeMaker {
     makeCoffee(shots:number): CoffeeCup
   }
 
-  class CoffeeMachine implements CoffeMaker {
+  // abstract 클래스는 생성자를 만들지않는다.
+  abstract class CoffeeMachine implements CoffeMaker {
     private static BEANS_PER_COFFEE:number = 7;
     private coffeeBeans:number = 7;
     
-    // 상속을 하려면 constructor가 private면 안된다.
-    // public혹은 상속받은 자식에서 접근할 수 있는 protected여야한다.
     constructor(coffeBeans: number) {
       this.coffeeBeans = coffeBeans;
-    }
-
-    static makeMachine(coffeeBeans:number):CoffeeMachine {
-      return new CoffeeMachine(coffeeBeans);
     }
 
     fillCoffeeBeans(beans:number) {
@@ -41,22 +37,20 @@
       console.log('머신 온도를 올리고 있습니다.');
     };
 
-    private extract(shots:number):CoffeeCup {
-      console.log(`${shots}샷 만큼의 커피를 내리고 있습니다.`);
-      return {
-        shots,
-        hasMilk: false
-      }
-    }
+    // 추상적인 함수기 때문에 상속받은 자식에서 직접적으로 구현해야한다
+    // 그러므로 부모 클래스에서는 이 함수는 추상적이다 라는것만 구현해놓는다.
+    // 인터페이스에서 규격을 정의한것처럼
+    // abstract 클래스는 구현해야하는 클래스마다 달라져야하는 함수만 따로 상속받은 클래스에서 구현해주면된다.
+    protected abstract extract(shots:number):CoffeeCup;
 
     clean():void {
       console.log('커피 머신을 청소합니다.')
     }
     
     makeCoffee(shots:number):CoffeeCup {
-      this.grindBeans(shots);
       this.preHeat();
-      return this.extract(shots);
+      this.grindBeans(shots);
+      return this.extract(shots)
     }
   }
 
@@ -68,11 +62,10 @@
       console.log('우유를 데우고있습니다.');
     }
 
-    makeCoffee(shots: number):CoffeeCup {
-      const coffee = super.makeCoffee(1);
+    protected extract(shots: number): CoffeeCup {
       this.steamMilk();
       return {
-        ...coffee,
+        shots,
         hasMilk: true
       }
     }
@@ -87,29 +80,22 @@
       console.log(`설탕을 추가합니다.`);
     }
     
-    makeCoffee(shots: number):CoffeeCup {
-      const coffee = super.makeCoffee(shots);
+    protected extract(shots: number): CoffeeCup {
       this.addSugar();
       return {
-        ...coffee,
+        shots,
         hasSugar: true
       }
     }
   }
 
-  const machine = new CoffeeMachine(28);
   const sweetCoffee = new SweetCoffeeMaker(35).makeCoffee(1);
   console.log(sweetCoffee);
 
 
-  // 인스턴스를 배열화 하여 반복문으로 생성가능하다
-  // 고로 해당 클래스의 인터페이스의 배열형태의 타입이라고 지정할 수 있다.
-  // 인터페이스에는 makeCoffee 메서드만 정의됐기때문에 makeCoffe 메서드만 사용할 수 있게된다.
   const machineArray: CoffeMaker[] = [
-    new CoffeeMachine(28),
     new CaffeLatteMachine(28, 'SS-2'),
     new SweetCoffeeMaker(28),
-    new CoffeeMachine(28),
     new CaffeLatteMachine(28, 'SS-3'),
     new SweetCoffeeMaker(28),
   ];

@@ -2,83 +2,88 @@
   type CoffeeCup = {
     shots: number;
     hasMilk: boolean;
-  };
-
-  interface CoffeeMaker {
-    makeCoffee(shots: number): CoffeeCup;
   }
-  // 인터페이스를 구현하는 클래스다 라는 뜻의 implements
-  // 인터페이스에 정의된것을 구현하지않으면 에러를 발생시킨다.
-  // 두가지 인터페이스의 규칙을 따르는 클래스
-  class CoffeMachine implements CoffeeMaker {
-    private static BEANS_GRAMM_PER_SHOT:number = 7; 
-    private coffeeBeans:number = 10000;
+  interface CoffeMaker {
+    makeCoffee(shots:number): CoffeeCup
+  }
 
-    constructor(coffeeBeans:number) {
-      this.coffeeBeans = coffeeBeans;
+  class CoffeeMachine implements CoffeMaker {
+    private static BEANS_PER_COFFEE:number = 7;
+    private coffeeBeans:number = 7;
+    
+    // 상속을 하려면 constructor가 private면 안된다.
+    // public혹은 상속받은 자식에서 접근할 수 있는 protected여야한다.
+    constructor(coffeBeans: number) {
+      this.coffeeBeans = coffeBeans;
     }
 
-    static makeMachine(coffeeBeans:number):CoffeMachine {
-      return new CoffeMachine(coffeeBeans)
+    static makeMachine(coffeeBeans:number):CoffeeMachine {
+      return new CoffeeMachine(coffeeBeans);
     }
 
-    private grindBeans(shots:number) {
-      console.log(`커피를 갈고있습니다 ${shots}샷`);
-      if(this.coffeeBeans < shots * CoffeMachine.BEANS_GRAMM_PER_SHOT) {
+    fillCoffeeBeans(beans:number) {
+      if(beans < 0) {
+        throw new Error('0개 미만의 커피콩은 넣을 수 없습니다.')
+      }
+      this.coffeeBeans = beans;
+    }
+
+    private grindBeans(shots:number):void {
+      if(this.coffeeBeans < shots * CoffeeMachine.BEANS_PER_COFFEE) {
         throw new Error('커피 콩이 부족합니다.');
       }
-      this.coffeeBeans -= shots * CoffeMachine.BEANS_GRAMM_PER_SHOT;
-    }
+      console.log(`${shots}샷 만큼의 커피 콩을 갈고있습니다.`);
+      this.coffeeBeans -= shots * CoffeeMachine.BEANS_PER_COFFEE;
+    };
 
-    private preheat() {
-      console.log('머신을 데우고 있습니다.');
-    }
+    private preHeat():void {
+      console.log('머신 온도를 올리고 있습니다.');
+    };
 
     private extract(shots:number):CoffeeCup {
-      console.log('커피를 추출중입니다.')
+      console.log(`${shots}샷 만큼의 커피를 내리고 있습니다.`);
       return {
         shots,
         hasMilk: false
-      };
-    }
-
-    fillCoffeBeans(coffeeBeans:number) {
-      if(coffeeBeans < 0) {
-        throw new Error('0개 미만의 콩은 넣을 수 없습니다.')
       }
-      this.coffeeBeans = coffeeBeans;
     }
 
-    makeCoffee(shots: number):CoffeeCup {
-      this.grindBeans(shots);
-      this.preheat();
-      return this.extract(shots);
+    clean():void {
+      console.log('커피 머신을 청소합니다.')
     }
-    cleanMachine() {
-      console.log('기계를 청소합니다.')
+    
+    makeCoffee(shots:number):CoffeeCup {
+      this.grindBeans(shots);
+      this.preHeat();
+      return this.extract(shots);
     }
   }
 
-  class LatteMachine extends CoffeMachine {
-    constructor(beans:number, public readonly serialNumber:string) {
+  class CaffeLatteMachine extends CoffeeMachine{
+    constructor(beans:number, public readonly serialNum: string) {
       super(beans);
     }
     private steamMilk():void {
-      console.log('우유를 데우고 있어요.')
+      console.log('우유를 데우고있습니다.');
     }
-    makeCoffee(shots:number):CoffeeCup {
-      const coffee = super.makeCoffee(shots);
+
+    makeCoffee(shots: number):CoffeeCup {
+      const coffee = super.makeCoffee(1);
       this.steamMilk();
       return {
         ...coffee,
         hasMilk: true
-      };
-    } 
+      }
+    }
   }
 
-  const machine = new CoffeMachine(23);
-  const latteMachine = new LatteMachine(23, 'SS-1');
-  const latte = latteMachine.makeCoffee(1);
+  const machine = new CoffeeMachine(28);
+  const latteMachine = new CaffeLatteMachine(28, 'SS-1');
+  // 상속받은 클래스는 부모 클래스의 메서드를 모두 사용가능하다
+  const latte = latteMachine.makeCoffee(2);
   console.log(latte);
-  console.log(latteMachine.serialNumber)
+  console.log(latteMachine.serialNum);
+
+  // 상속을 이용하면 부모의 기능을 그대로 사용하면서,
+  // 자식에서 따로 추가해야할 기능만 추가해서 사용가능하다.
 }
