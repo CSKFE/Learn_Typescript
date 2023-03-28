@@ -53,7 +53,6 @@
       return this.extract(shots)
     }
   }
-
   class CaffeLatteMachine extends CoffeeMachine{
     constructor(beans:number, public readonly serialNum: string) {
       super(beans);
